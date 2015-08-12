@@ -99,26 +99,54 @@ passport.deserializeUser(function(id, callback){
 
 
 module.exports = {
-	localRegister : passport.authenticate("local-register", {
+local:{
+register : passport.authenticate("local-register", {
 		successRedirect : "/profile",
 		failureRedirect : "/register"
 	}),
-	localConnect : passport.authorize("local-register", {
+	connect : passport.authenticate("local-register", {
 		successRedirect : "/profile",
 		failureRedirect : "/connect/local"
 	}),
-	localLogin: passport.authenticate("local-login", {
+	login: passport.authenticate("local-login", {
 		successRedirect : "/profile",
 		failureRedirect : "/login"
 	}),
-	facebookLogin: passport.authenticate("facebook",{scope:["email"]}),
-	facebookCallback:passport.authenticate("facebook",{
+	disconnect: function(req,res,next){
+		var user = req.user;
+		user.local.email = undefined;
+		user.local.password = undefined;
+		
+		user.save(function(err){
+			next();
+		});
+		}
+	},
+facebook:{
+	login: passport.authenticate("facebook",{scope:["email"]}),
+	callback:passport.authenticate("facebook",{
 		successRedirect : "/profile",
 		failureRedirect : "/"
 	}),
-	facebookConnect: passport.authorize("facebook",{scope:["email"]}),
-	facebookConnectCallback:passport.authorize("facebook",{
+	connect: passport.authorize("facebook",{scope:["email"]}),
+	connectCallback:passport.authorize("facebook",{
 		successRedirect : "/profile",
 		failureRedirect : "/profile"
-	})
+	}),
+	disconnect: function(req,res,next){
+		var user = req.user;
+		user.facebook.id = undefined;
+		user.facebook.email = undefined;
+		user.facebook.token = undefined;
+		
+		user.save(function(err){
+			next();
+		});
+	}
+	
+	
+	
+	}
+
+
 };
