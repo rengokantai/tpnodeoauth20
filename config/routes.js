@@ -27,6 +27,15 @@ router.post("/register", authConfig.localRegister);
 router.get("/facebook", authConfig.facebookLogin);
 router.get("/facebook/callback", authConfig.facebookCallback);
 
+router.get("/connect/local",function(req,res){
+	res.render("connect-local.ejs");
+});
+
+router.post("/connect/local", authConfig.localConnect);
+
+router.get("/connect/facebook", authConfig.facebookConnect);
+router.get("/connect/facebook/callback", authConfig.facebookConnectCallback);
+
 router.get("/profile", ensureAuthenticated, function(req,res){
 res.render("profile.ejs",{user:req.user});
 

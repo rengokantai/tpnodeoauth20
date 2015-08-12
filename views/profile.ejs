@@ -11,7 +11,7 @@
             <li>Email:<%= user.local.email %></li>
             <li>Password:<%= user.local.password %></li>
                 <%}else{%>
-                    <li>Add link here</li>
+                    <li><a href="/connect/local">Connect a local account</a></li>
                      <%}%>
     </ul>
                     
@@ -23,7 +23,7 @@
             <li>Email:<%= user.facebook.email %></li>
             <li>Token:<%= user.facebook.token %></li>
                 <%}else{%>
-                    <li>Add link here</li>
+                    <li><a href="/connect/facebook">Connect a Facebook account</a></li>
                      <%}%>
     </ul>          
                     

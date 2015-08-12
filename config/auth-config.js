@@ -7,26 +7,29 @@ var facebookConfig = {
 	clientID : "1612644192321533",
 	clientSecret : "3aeb919643c6c21029c3cbe7deafabfa",
 	callbackURL : "http://localhost:3000/facebook/callback",
-	profileFields: ['email']
+	profileFields: ['email'],
+	passReqToCallback: true
 }
 
 var localRegisterInit = function(req, email, password, callback){
-	User.findOne({"local.email" :email},function(err, user){
+	User.findOne({"local.email" :email},function(err, existingUser){
 	if(err){
 	return callback(err);
 	}
-	if(user){
+	if(existingUser){
 		return callback(null, false);
 	}
-	var newUser = new User();
-	newUser.local.email =email;
-	newUser.local.password =newUser.hashPassword(password);
 	
-	newUser.save(function(err){
+	var user = (req.user) ? req.user : new User();
+	//var newUser = new User();
+	user.local.email =email;
+	user.local.password =user.hashPassword(password);
+	
+	user.save(function(err){
 		if(err){
 			throw err;
 		}
-		return callback(null, newUser);
+		return callback(null, user);
 	});
 });
 };
@@ -55,25 +58,27 @@ var localOptions ={
 	passReqToCallback :true
 }
 
-var facebookInit = function(token, refreshToken, profile, callback){
-	User.findOne({"facebook.id":profile.id}, function(err,user){
+var facebookInit = function(req, token, refreshToken, profile, callback){
+	User.findOne({"facebook.id":profile.id}, function(err,existingUser){
 		if(err){
 			return callback(err);
 		}
-		if(user){
-			return callback(null, user);
+		if(existingUser){
+			return callback(null, existingUser);
 		}
-		var newUser =new User();
 		
-		newUser.facebook.id = profile.id;
-		newUser.facebook.token =token;
-		newUser.facebook.email = profile.emails[0].value;
+		var user = (req.user) ? req.user : new User();
+	
 		
-		newUser.save(function(err){
+		user.facebook.id = profile.id;
+		user.facebook.token =token;
+		user.facebook.email = profile.emails[0].value;
+		
+		user.save(function(err){
 		if(err){
 			throw err;
 		}
-		return callback(null, newUser);
+		return callback(null, user);
 		});
 	});
 };
@@ -98,6 +103,10 @@ module.exports = {
 		successRedirect : "/profile",
 		failureRedirect : "/register"
 	}),
+	localConnect : passport.authorize("local-register", {
+		successRedirect : "/profile",
+		failureRedirect : "/connect/local"
+	}),
 	localLogin: passport.authenticate("local-login", {
 		successRedirect : "/profile",
 		failureRedirect : "/login"
@@ -106,5 +115,10 @@ module.exports = {
 	facebookCallback:passport.authenticate("facebook",{
 		successRedirect : "/profile",
 		failureRedirect : "/"
+	}),
+	facebookConnect: passport.authorize("facebook",{scope:["email"]}),
+	facebookConnectCallback:passport.authorize("facebook",{
+		successRedirect : "/profile",
+		failureRedirect : "/profile"
 	})
 };
