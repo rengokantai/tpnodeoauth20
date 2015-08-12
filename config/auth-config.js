@@ -1,6 +1,7 @@
 var passport = require("passport");
 var LocalStrategy = require("passport-local").Strategy;
 var FacebookStrategy = require("passport-facebook").Strategy;
+var OAuth2Strategy = require("passport-oauth2").Strategy;
 var User = require("../models/user");
 
 var facebookConfig = {
@@ -9,7 +10,15 @@ var facebookConfig = {
 	callbackURL : "http://localhost:3000/facebook/callback",
 	profileFields: ['email'],
 	passReqToCallback: true
-}
+};
+
+var demoAppConfig = {
+	authorizationURL:"http://brentertainment.com/oauth2/lockdin/authorize",
+	tokenURL:"http://brentertainment.com/oauth2/lockdin/token",
+	clientID : "demoapp",
+	clientSecret : "demopass",
+	callbackURL : "http://localhost:3000/demo/callback"
+};
 
 var localRegisterInit = function(req, email, password, callback){
 	User.findOne({"local.email" :email},function(err, existingUser){
@@ -83,9 +92,16 @@ var facebookInit = function(req, token, refreshToken, profile, callback){
 	});
 };
 
+var demoAppInit = function(token, refreshToken, profile, callback){
+	return callback(null, false);
+};
+
+
+
 passport.use("local-register", new LocalStrategy(localOptions, localRegisterInit));
 passport.use("local-login", new LocalStrategy(localOptions, localLoginInit));
 passport.use(new FacebookStrategy(facebookConfig, facebookInit));
+passport.use(new OAuth2Strategy(demoAppConfig, demoAppInit));
 
 passport.serializeUser(function(user, callback){
 	callback(null, user.id);
@@ -146,7 +162,12 @@ facebook:{
 	
 	
 	
+	},
+	demo:{
+		login: passport.authenticate("oauth2",{state:"5654a0294faf198695494e37691442ca"}),
+		callback:passport.authenticate("oauth2",{
+			successRedirect : "/profile",
+			failureRedirect : "/"
+		})
 	}
-
-
 };

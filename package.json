@@ -21,6 +21,7 @@
 	"mongoose":"",
 	"passport":"",
 	"passport-local":"",
-	"passport-facebook":""
+	"passport-facebook":"",
+	"passport-oauth2":""
   }
 }
